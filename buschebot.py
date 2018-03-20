@@ -4,25 +4,58 @@ from telegram.ext import Updater, MessageHandler, Filters
 
 import vars
 
+PUNCTUATION_MARKS = '.?!:;-()[]{}/'
+
 updater = Updater(token=vars.API_TOKEN)
 dispatcher = updater.dispatcher
 
+phrases = [
+    "pego meu carro e vou embora",
+    "tchau",
+    "oloco",
+    "veneza parece uma favela",
+    "cansei de ir pra europa",
+    "o carro e meu",
+]
+
+reply = [
+    "fala carai",
+    "fala",
+]
+
+responses = [
+    "sei la",
+    "parei de trabalhar como vidente",
+]
+
 def echo(bot, update):
     chat_id = update.message.chat_id
+    sender_name = update.message.from_user.first_name + ' ' + update.message.from_user.last_name
     sender = update.message.from_user.username
     message = update.message.text
 
-    print('Message "{}" sent by {}'.format(message, sender))
+    answer = ""
 
-    punctuation_marks = '.?!:;-()[]{}/'
+    if "@busche_bot" in message:
+        answer = random.choice(reply)
+    else:
+        if sender == 'jpbusche' and len(message.split()) > 1 and '?' not in message and message[-1] not in PUNCTUATION_MARKS:
+            answer = message + '?'
+        elif 'bot' in message.lower().split() or 'bot?' in message.lower().split():
+            answer = random.choice(reply)
+        elif '?' in message and len(message) > 1:
+            if 'o que' in message:
+                answer = random.choice(responses)
+            elif 'quem' in message:
+                answer = random.choice(responses)
+            else:
+                answer = random.choice(["sim","nao","nao po"])
 
-    if sender == 'jpbusche':
-        if message.find('?') and message[-1] not in punctuation_marks:
-            bot.send_message(chat_id=chat_id, text=message+'?')
-        else:
-            bot.send_sticker(chat_id=chat_id, sticker=random.choice(vars.STICKERS))
+    bot.send_message(chat_id=chat_id, text=answer)
+    print('Message "{}" sent by [{},{}] -> {}'.format(message, sender, sender_name, answer))
 
 echo_handler = MessageHandler(Filters.text, echo)
+
 dispatcher.add_handler(echo_handler)
 
 updater.start_polling()
